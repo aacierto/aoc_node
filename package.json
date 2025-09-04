@@ -1,0 +1,14 @@
+{
+  "name": "aoc_node",
+  "version": "1.0.0",
+  "description": "A minimal Node.js web app with frontend and GitHub Actions workflow",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.4"
+  }
+}
