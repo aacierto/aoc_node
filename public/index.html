@@ -1,12 +1,371 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AOC Node: Home</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Constraint Archive Data</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(45deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .search-section {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .search-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .search-input, .search-select {
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            min-width: 200px;
+        }
+        
+        .search-input:focus, .search-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .search-btn, .load-btn {
+            padding: 12px 30px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+        
+        .search-btn:hover, .load-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .stats {
+            padding: 20px 30px;
+            background: #e8f4f8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .stat-label {
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9em;
+        }
+        
+        .content {
+            padding: 30px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+        
+        .data-grid {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .data-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+            hover-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .data-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .data-field {
+            margin-bottom: 10px;
+        }
+        
+        .field-label {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-right: 10px;
+        }
+        
+        .field-value {
+            color: #34495e;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 50px;
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+        
+        .error {
+            background: #ff6b6b;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .search-container {
+                flex-direction: column;
+            }
+            
+            .search-input, .search-select {
+                min-width: 100%;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <h1>Welcome to AOC Node!</h1>
-  <p>This is the frontend served from <code>public/index.html</code>.</p>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Constraint Archive</h1>
+            <p>Explore the archive of constraint literature data</p>
+        </div>
+        
+        <div class="search-section">
+            <div class="search-container">
+                <input type="text" id="searchInput" class="search-input" placeholder="Search data...">
+                <select id="fieldSelect" class="search-select">
+                    <option value="">All fields</option>
+                    <option value="accession_number">Accession Number</option>
+                    <option value="title_from_seller">Title</option>
+                    <option value="format">Format</option>
+                    <option value="date_of_sale">Date of Sale</option>
+                    <option value="cost_less_shipping">Cost</option>
+                    <option value="notes">Notes</option>
+                </select>
+                <button id="searchBtn" class="search-btn">Search</button>
+                <button id="loadAllBtn" class="load-btn">Load All</button>
+            </div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number" id="totalCount">-</div>
+                <div class="stat-label">Total Records</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="displayedCount">-</div>
+                <div class="stat-label">Displayed</div>
+            </div>
+        </div>
+        
+        <div class="content" id="content">
+            <div class="no-data">
+                Click "Load All" to fetch data or use the search to find specific records.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class ConstraintArchive {
+            constructor() {
+                this.data = [];
+                this.init();
+            }
+            
+            init() {
+                document.getElementById('loadAllBtn').addEventListener('click', () => this.loadAllData());
+                document.getElementById('searchBtn').addEventListener('click', () => this.searchData());
+                document.getElementById('searchInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.searchData();
+                });
+            }
+            
+            async loadAllData() {
+                this.showLoading();
+                try {
+                    const response = await fetch('/api/data');
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.data = result.data;
+                        this.displayData(this.data);
+                        this.updateStats(result.count, result.count);
+                    } else {
+                        this.showError(result.error);
+                    }
+                } catch (error) {
+                    this.showError('Failed to fetch data: ' + error.message);
+                }
+            }
+            
+            async searchData() {
+                const query = document.getElementById('searchInput').value.trim();
+                const field = document.getElementById('fieldSelect').value;
+                
+                if (!query) {
+                    this.loadAllData();
+                    return;
+                }
+                
+                this.showLoading();
+                try {
+                    const params = new URLSearchParams({ q: query });
+                    if (field) params.append('field', field);
+                    
+                    const response = await fetch(`/api/search?${params}`);
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.displayData(result.data);
+                        this.updateStats(result.count, result.count);
+                    } else {
+                        this.showError(result.error);
+                    }
+                } catch (error) {
+                    this.showError('Search failed: ' + error.message);
+                }
+            }
+            
+            displayData(data) {
+                const content = document.getElementById('content');
+                
+                if (!data || data.length === 0) {
+                    content.innerHTML = '<div class="no-data">No records found.</div>';
+                    return;
+                }
+                
+                const html = data.map(item => `
+                    <div class="data-item">
+                        <div class="data-field">
+                            <span class="field-label">Accession Number:</span>
+                            <span class="field-value">${this.formatValue(item.accession_number)}</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="field-label">Title:</span>
+                            <span class="field-value">${this.formatValue(item.title_from_seller)}</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="field-label">Format:</span>
+                            <span class="field-value">${this.formatValue(item.format)}</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="field-label">Date of Sale:</span>
+                            <span class="field-value">${this.formatValue(item.date_of_sale)}</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="field-label">Cost (less shipping):</span>
+                            <span class="field-value">${this.formatValue(item.cost_less_shipping)}</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="field-label">Notes:</span>
+                            <span class="field-value">${this.formatValue(item.notes)}</span>
+                        </div>
+                    </div>
+                `).join('');
+                
+                content.innerHTML = `<div class="data-grid">${html}</div>`;
+            }
+            
+            formatValue(value) {
+                return value === null || value === undefined || value === '' ? 'N/A' : value;
+            }
+            
+            showLoading() {
+                document.getElementById('content').innerHTML = '<div class="loading">Loading data...</div>';
+                this.updateStats('-', '-');
+            }
+            
+            showError(error) {
+                document.getElementById('content').innerHTML = `
+                    <div class="error">
+                        <strong>Error:</strong> ${error}
+                    </div>
+                `;
+                this.updateStats('-', '-');
+            }
+            
+            updateStats(total, displayed) {
+                document.getElementById('totalCount').textContent = total;
+                document.getElementById('displayedCount').textContent = displayed;
+            }
+        }
+        
+        // Initialize the app when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new ConstraintArchive();
+        });
+    </script>
 </body>
 </html>
