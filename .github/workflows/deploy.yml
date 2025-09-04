@@ -1,27 +1,80 @@
-name: Deploy
+# .github/workflows/deploy.yml
+name: Deploy to GitHub Pages
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm install
+    
+    - name: Build application
+      run: npm run build
+      
+    - name: Deploy to GitHub Pages
+      if: github.ref == 'refs/heads/main'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./public
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
+---
 
-      - name: Install dependencies
-        run: npm install
+# Alternative: Render.com deployment
+# render.yaml (for render.com deployment)
+services:
+  - type: web
+    name: constraint-archive-server
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
 
-      - name: Run tests
-        run: echo "No tests specified"
+---
 
-      - name: Deploy (placeholder)
-        run: echo "Add your deployment steps here"
+# Dockerfile (for containerized deployment)
+FROM node:18-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install --only=production
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["npm", "start"]
+
+---
+
+# .dockerignore
+node_modules
+npm-debug.log
+.git
+.gitignore
+README.md
+.env
+.nyc_output
+coverage
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
